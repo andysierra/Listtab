@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let switcher = Switcher()
@@ -52,6 +53,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         menu.addItem(withTitle: "ListTab", action: nil, keyEquivalent: "").isEnabled = false
         menu.addItem(.separator())
+        let login = menu.addItem(withTitle: "Abrir al iniciar sesión", action: #selector(toggleLogin(_:)), keyEquivalent: "")
+        login.target = self
+        login.state = SMAppService.mainApp.status == .enabled ? .on : .off
+        menu.addItem(.separator())
         menu.addItem(withTitle: "Salir y restaurar ⌘Tab", action: #selector(quit), keyEquivalent: "q").target = self
         statusItem.menu = menu
     }
@@ -73,6 +78,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         img.isTemplate = true
         return img
+    }
+
+    @objc private func toggleLogin(_ item: NSMenuItem) {
+        do {
+            if SMAppService.mainApp.status == .enabled { try SMAppService.mainApp.unregister() }
+            else { try SMAppService.mainApp.register() }
+        } catch { NSSound.beep() }
+        item.state = SMAppService.mainApp.status == .enabled ? .on : .off
     }
 
     @objc private func quit() { NSApp.terminate(nil) }

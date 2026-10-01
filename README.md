@@ -25,7 +25,7 @@ a paid tier. I only wanted the list. So I built exactly that: nothing more.
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible. A list that hides
   3 of your 10 windows behind a scrollbar is lying to you.
 - Includes minimized windows. Quick ⌘Tab taps switch instantly with no flicker (the panel appears after 100 ms).
-- Menu bar icon with *Quit & restore ⌘Tab*. No Dock icon.
+- Menu bar icon with *Open at login* and *Quit & restore ⌘Tab*. No Dock icon.
 
 <p align="center"><img src="images/panel-many.png" width="640" alt="23 windows, all visible without scrolling"></p>
 <p align="center"><sub>23 windows, all visible. The panel scales instead of scrolling.</sub></p>
@@ -74,7 +74,7 @@ That setting **survives a crash**. If the app is force-killed and ⌘Tab stops w
 - It relies on two private macOS functions (`_AXUIElementGetWindow`, `CGSSetSymbolicHotKeyEnabled`).
   They have been stable for years, but Apple can break them in any release.
 - Tested on macOS 26 (Tahoe), Apple Silicon only. Intel and macOS 14–15 are untested.
-- No mouse, search, close/quit from the list, or launch-at-login yet.
+- No mouse, search, or close/quit from the list yet.
 
 ## How it works
 
@@ -89,6 +89,7 @@ That setting **survives a crash**. If the app is force-killed and ⌘Tab stops w
 ## Developing
 
 ```bash
+ListTab --login-on / --login-off     # start at login without the menu
 ListTab --list                       # print the windows the switcher would show
 ListTab --show                       # open the panel for 6 s without installing shortcuts
 ListTab --show --demo --count=23     # fake windows on a neutral backdrop (used for these screenshots)

@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 
 let args = CommandLine.arguments
 
@@ -6,6 +7,15 @@ let args = CommandLine.arguments
 if args.contains("--restore-native") {
     setNativeCommandTabEnabled(true)
     print("⌘Tab nativo restaurado")
+    exit(0)
+}
+
+// --login-on / --login-off: abrir (o no) al iniciar sesion, sin pasar por el menu.
+if args.contains("--login-on") || args.contains("--login-off") {
+    do {
+        if args.contains("--login-on") { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+        print("inicio de sesion: \(SMAppService.mainApp.status == .enabled ? "activado" : "desactivado")")
+    } catch { print("error: \(error.localizedDescription)"); exit(1) }
     exit(0)
 }
 
