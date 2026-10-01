@@ -1,0 +1,24 @@
+ListTab — ⌘Tab con lista de ventanas (macOS 14 o superior, Apple Silicon e Intel)
+
+INSTALAR
+1. Arrastra ListTab.app a la carpeta Aplicaciones.
+2. Primera apertura: esta app no esta notarizada por Apple, asi que macOS la bloquea.
+   Abre la Terminal y ejecuta UNA vez:
+
+       xattr -dr com.apple.quarantine /Applications/ListTab.app
+
+   (alternativa: abrirla, ir a Ajustes del Sistema > Privacidad y seguridad > "Abrir igualmente").
+3. Abre ListTab y concede el permiso en
+   Ajustes del Sistema > Privacidad y seguridad > Accesibilidad.
+4. Cierra AltTab u otro cambiador de ventanas si lo usas: no pueden compartir el atajo.
+5. Pulsa ⌘Tab.
+
+USO
+  ⌘Tab / ⌘⇧Tab   abre y recorre la lista     ↑ ↓   mover
+  soltar ⌘ o Return   ir a la ventana         Esc   cancelar
+  Icono de la barra de menu > "Salir y restaurar ⌘Tab"
+
+SI PIERDES EL ⌘TAB NATIVO (la app se cerro a la fuerza):
+  /Applications/ListTab.app/Contents/MacOS/ListTab --restore-native
+
+LIMITES: lista las ventanas del escritorio (Space) actual y las minimizadas.
