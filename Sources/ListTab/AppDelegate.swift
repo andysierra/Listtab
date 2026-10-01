@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var retry: Timer?
     private let demo = CommandLine.arguments.contains("--show")
+    private var backdrop: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Keyboard.shared.switcher = switcher
@@ -17,10 +18,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         retry = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tryInstall() }
 
         // --show: abre el panel unos segundos para ver el diseno sin usar el teclado.
+        // Con --demo usa ventanas ficticias sobre un fondo propio (capturas del README).
         if demo {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [switcher] in
-                switcher.begin(reverse: false)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 6) { NSApp.terminate(nil) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+                var wins: [SwitchWindow]? = nil
+                if Demo.enabled {
+                    backdrop = Demo.makeBackdrop(); backdrop?.orderFrontRegardless()
+                    wins = Demo.windows(count: Demo.intArg("count", default: 7))
+                }
+                switcher.begin(reverse: false, demo: wins, select: Demo.enabled ? Demo.intArg("select", default: 1) : nil)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
+                    let f = switcher.panelFrame, h = (NSScreen.main ?? NSScreen.screens[0]).frame.height
+                    print("FRAME \(Int(f.minX)) \(Int(h - f.maxY)) \(Int(f.width)) \(Int(f.height))")
+                    fflush(stdout)
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(Demo.intArg("hold", default: 6))) { NSApp.terminate(nil) }
             }
         }
     }

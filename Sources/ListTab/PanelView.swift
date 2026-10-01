@@ -109,5 +109,7 @@ final class SwitcherPanel {
         panel.orderFrontRegardless()
     }
 
+    var frame: NSRect { panel.frame }
+
     func hide() { panel.orderOut(nil) }
 }

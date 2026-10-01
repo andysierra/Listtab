@@ -1,87 +1,104 @@
+<p align="center"><img src="images/icon.png" width="128" alt="ListTab icon"></p>
+
 # ListTab
 
-Cambiador de ventanas para macOS: **⌘Tab con lista** (icono · título completo · app), como AltTab pero sin pagar el estilo "Titles".
-Swift nativo, sin dependencias. Versión 0.1 (mínima).
+**⌘Tab, but a list of windows with their full titles. Free, native, ~550 lines of Swift.**
 
-## Uso
+> I got tired of AltTab. In 2026, paying a premium for something Windows has shipped since forever —
+> *switch between windows, and tell me which one is which* — felt ridiculous to me. So I made my own.
 
-| Tecla | Acción |
-|---|---|
-| `⌘Tab` / `⌘⇧Tab` | abre la lista / recorre hacia delante / hacia atrás |
-| `↓` `↑` | mover la selección |
-| soltar `⌘` o `Return` | ir a la ventana |
-| `Esc` | cancelar |
+<p align="center"><img src="images/panel.png" alt="ListTab showing a list of windows: icon, full title, app"></p>
 
-Alcance de la v0.1: ventanas del **Space actual** y minimizadas, ordenadas por recencia (z-order). No lista ventanas de otros Spaces.
+## Why
 
-## Instalar
+On macOS, ⌘Tab switches between **apps**, not windows. Open six terminals and you get one icon.
+That is the problem Windows' Alt+Tab solved a long time ago, and the reason I installed [AltTab](https://alt-tab.app/).
 
-```bash
-./build.sh install      # compila, firma ad-hoc, copia a ~/Applications/ListTab.app
-```
+AltTab is good, and its core is open source. But its *Titles* style — the compact list that lets you
+read `yazi: Desktop` and `yazi: dev` instead of a grid of identical `yazi…` thumbnails — is part of **AltTab Pro**,
+a paid tier. I only wanted the list. So I built exactly that: nothing more.
 
-1. Salir de AltTab (dos apps no pueden tener el mismo atajo).
-2. Abrir `ListTab` y conceder **Accesibilidad** (Ajustes del Sistema → Privacidad y seguridad). La app reintenta sola cada segundo.
-3. `⌘Tab`.
+## What it does
 
-## Firma estable (el permiso de Accesibilidad sobrevive a recompilar)
+- **⌘Tab / ⌘⇧Tab** opens a list of your windows: **icon · full title · app**, most recent first.
+- **↑ ↓** to move, **release ⌘** or **Return** to jump, **Esc** to cancel.
+- **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible. A list that hides
+  3 of your 10 windows behind a scrollbar is lying to you.
+- Includes minimized windows. Quick ⌘Tab taps switch instantly with no flicker (the panel appears after 100 ms).
+- Menu bar icon with *Quit & restore ⌘Tab*. No Dock icon.
 
-Con firma ad-hoc el permiso se pierde en cada build (macOS lo ata al hash del binario). `build.sh` firma con el certificado local **"ListTab Local Signing"** si existe en el llavero; así el requisito de firma queda atado al certificado y no al binario. En un Mac nuevo hay que crearlo una vez:
+<p align="center"><img src="images/panel-many.png" width="640" alt="23 windows, all visible without scrolling"></p>
+<p align="center"><sub>23 windows, all visible. The panel scales instead of scrolling.</sub></p>
 
-```bash
-cat > cs.cnf <<'CNF'
-[req]
-distinguished_name=dn
-x509_extensions=ext
-prompt=no
-[dn]
-CN=ListTab Local Signing
-[ext]
-basicConstraints=critical,CA:false
-keyUsage=critical,digitalSignature
-extendedKeyUsage=critical,codeSigning
-CNF
-openssl req -x509 -newkey rsa:2048 -nodes -keyout k.pem -out c.pem -days 3650 -config cs.cnf
-openssl pkcs12 -export -inkey k.pem -in c.pem -out c.p12 -passout pass:listtab
-security import c.p12 -k ~/Library/Keychains/login.keychain-db -P listtab -T /usr/bin/codesign
-rm k.pem c.p12 cs.cnf        # c.pem puede quedarse; el certificado vence en 10 años
-```
+## Install
 
-Si tras migrar de firma ad-hoc a esta aparece ListTab duplicada en Accesibilidad: quitar la entrada vieja con `−` y volver a añadir.
+**From a release** (universal binary: Apple Silicon + Intel, macOS 14+):
 
-## Seguridad: el ⌘Tab nativo
+1. Download `ListTab-x.y.z.dmg` from [Releases](../../releases) and drag **ListTab** to *Applications*.
+2. The app isn't notarized (that needs a paid Apple Developer account — see the theme here), so macOS will block it
+   the first time. Run once in Terminal:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/ListTab.app
+   ```
+3. Open it and grant **Accessibility** in *System Settings → Privacy & Security → Accessibility*.
+4. Quit AltTab or any other switcher (two apps can't own the same shortcut), then press **⌘Tab**.
 
-Para recibir `⌘Tab` hay que apagar el atajo del Dock (`CGSSetSymbolicHotKeyEnabled` 1 y 2). **Ese apagado persiste aunque la app muera.**
-La app lo restaura al salir (menú → *Salir y restaurar ⌘Tab*, SIGTERM/SIGINT/SIGHUP). Si se cierra a la fuerza (`kill -9`, crash) y pierdes el ⌘Tab nativo:
+**From source** (needs Xcode):
 
 ```bash
-~/Applications/ListTab.app/Contents/MacOS/ListTab --restore-native
+./build.sh install      # builds a universal app, signs it, copies it to ~/Applications
+./package.sh            # builds dist/ListTab-x.y.z.dmg
 ```
 
-## Pruebas sin teclado
+> **Stable permissions.** With ad-hoc signing macOS forgets the Accessibility permission on every rebuild.
+> `build.sh` signs with a local self-signed certificate named `ListTab Local Signing` if it finds one in your
+> keychain; the one-time recipe to create it is in [`docs/signing.md`](docs/signing.md).
+
+## Privacy
+
+- Needs **Accessibility** only. No Screen Recording, no Input Monitoring.
+- No network code, no telemetry, no analytics. Read the source: it's eight small files.
+
+## ⚠️ It disables the native ⌘Tab
+
+To receive ⌘Tab, ListTab turns off macOS's own shortcut (the same way AltTab does) and turns it back on when it quits.
+That setting **survives a crash**. If the app is force-killed and ⌘Tab stops working:
 
 ```bash
-ListTab --list     # imprime las ventanas que vería el switcher
-ListTab --show     # abre el panel 6 s para ver el diseño (no instala atajos)
+/Applications/ListTab.app/Contents/MacOS/ListTab --restore-native
 ```
 
-## Arquitectura (calcada de AltTab, lwouis/alt-tab-macos, GPL-3)
+## Limitations (v0.1)
 
-```mermaid
-flowchart LR
-    C["«Carbon»<br/>RegisterEventHotKey ⌘Tab"] --> S["«estado»<br/>Switcher"]
-    F["«tap pasivo sesión»<br/>flagsChanged: soltar ⌘"] --> S
-    H["«tap activo HID»<br/>Tab ↑↓ Esc Return<br/>(solo mientras está abierto)"] --> S
-    W["«Accesibilidad + CGWindowList»<br/>Windows.list()"] --> S
-    S --> P["«NSPanel + SwiftUI»<br/>lista"]
-    S --> A["«AXRaise»<br/>Windows.focus()"]
+- Lists windows of the **current Space** (plus minimized ones). Other Spaces need private SkyLight APIs; not done yet.
+- It relies on two private macOS functions (`_AXUIElementGetWindow`, `CGSSetSymbolicHotKeyEnabled`).
+  They have been stable for years, but Apple can break them in any release.
+- Tested on macOS 26 (Tahoe), Apple Silicon only. Intel and macOS 14–15 are untested.
+- No mouse, search, close/quit from the list, or launch-at-login yet.
+
+## How it works
+
+| Piece | File | Technique |
+|---|---|---|
+| ⌘Tab / ⌘⇧Tab | `Keyboard.swift` | Carbon hotkey + native shortcut disabled; passive tap for ⌘ release; active HID tap only while open |
+| Window list & order | `Windows.swift` | Accessibility API for titles; `CGWindowList` z-order for recency |
+| State machine | `Switcher.swift` | begin / step / commit / cancel, 100 ms delayed panel |
+| UI | `PanelView.swift` | `NSPanel` + SwiftUI list; row height adapts so everything fits |
+| Private API shims | `PrivateAPI.swift` | two `@_silgen_name` declarations |
+
+## Developing
+
+```bash
+ListTab --list                       # print the windows the switcher would show
+ListTab --show                       # open the panel for 6 s without installing shortcuts
+ListTab --show --demo --count=23     # fake windows on a neutral backdrop (used for these screenshots)
+tools/screenshots.sh                 # regenerate images/
+swift tools/make-icon.swift          # regenerate the app icon
 ```
 
-Archivos: `Keyboard.swift` (atajos y taps), `Switcher.swift` (estado), `Windows.swift` (enumerar/enfocar), `PanelView.swift` (UI), `PrivateAPI.swift` (`_AXUIElementGetWindow`, `CGSSetSymbolicHotKeyEnabled`).
+## Credits
 
-## Pendiente (versión completa)
-
-- Ventanas de otros Spaces (requiere APIs privadas de SkyLight).
-- Arranque al iniciar sesión (LaunchAgent).
-- Firma estable para no re-conceder Accesibilidad en cada build.
-- Cerrar/ocultar ventana desde la lista, ratón, búsqueda.
+The architecture (Carbon hotkey + passive/active event taps + disabling the native shortcut) comes from reading
+the source of [AltTab](https://github.com/lwouis/alt-tab-macos), which is GPL-3.0. I wrote this code from scratch;
+the two private-function declarations are the same public signatures AltTab uses. Thanks to its author —
+the point of this project is only that one list view shouldn't need a license key.

@@ -4,15 +4,16 @@ import AppKit
 final class Switcher {
     let model = ListModel()
     private lazy var panel = SwitcherPanel(model: model)
+    var panelFrame: NSRect { panel.frame }
     private(set) var active = false
     private var showWork: DispatchWorkItem?
 
     /// Se llama al pulsar ⌘Tab / ⌘⇧Tab estando inactivo.
-    func begin(reverse: Bool) {
-        let wins = Windows.list()
+    func begin(reverse: Bool, demo: [SwitchWindow]? = nil, select: Int? = nil) {
+        let wins = demo ?? Windows.list()
         guard !wins.isEmpty else { return }
         model.items = wins
-        model.selected = wins.count > 1 ? (reverse ? wins.count - 1 : 1) : 0
+        model.selected = select ?? (wins.count > 1 ? (reverse ? wins.count - 1 : 1) : 0)
         active = true
         Keyboard.shared.setActive(true)
         // Panel con retardo: un ⌘Tab rapido cambia de ventana sin parpadeo.
