@@ -102,3 +102,7 @@ The architecture (Carbon hotkey + passive/active event taps + disabling the nati
 the source of [AltTab](https://github.com/lwouis/alt-tab-macos), which is GPL-3.0. I wrote this code from scratch;
 the two private-function declarations are the same public signatures AltTab uses. Thanks to its author —
 the point of this project is only that one list view shouldn't need a license key.
+
+## License
+
+[MIT](LICENSE).
