@@ -16,6 +16,8 @@ INSTALAR
 USO
   ⌘Tab / ⌘⇧Tab   abre y recorre la lista     ↑ ↓   mover
   soltar ⌘ o Return   ir a la ventana         Esc   cancelar
+  W   cierra la ventana seleccionada          Q   cierra la app entera
+  ✕ al final de cada fila: cierra esa ventana (⌥ + clic: cierra la app)
   Icono de la barra de menu > "Salir y restaurar ⌘Tab"
 
 SI PIERDES EL ⌘TAB NATIVO (la app se cerro a la fuerza):

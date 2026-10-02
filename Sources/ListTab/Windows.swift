@@ -60,6 +60,15 @@ enum Windows {
         }.map { $0.w }
     }
 
+    /// Cierra la ventana pulsando su boton de cerrar (como el circulo rojo). Si la app pide guardar,
+    /// la ventana sigue ahi y el siguiente refresco de la lista la vuelve a mostrar.
+    static func close(_ w: SwitchWindow) {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(w.element, kAXCloseButtonAttribute as CFString, &ref) == .success,
+              let ref else { return }
+        AXUIElementPerformAction(ref as! AXUIElement, kAXPressAction as CFString)
+    }
+
     static func focus(_ w: SwitchWindow) {
         Recency.shared.touch(w.windowID)   // registrar ya: el AXObserver puede tardar unos ms
         if w.minimized {

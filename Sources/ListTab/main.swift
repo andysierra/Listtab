@@ -19,6 +19,24 @@ if args.contains("--login-on") || args.contains("--login-off") {
     exit(0)
 }
 
+// --selftest-close: cierra de verdad ventanas de TextEdit con el mismo codigo de ListTab.
+// Prepara antes 2 documentos:  osascript -e 'tell application "TextEdit" to make new document' (x2)
+if args.contains("--selftest-close") {
+    guard AXIsProcessTrusted() else { print("Sin permiso de Accesibilidad"); exit(1) }
+    func pump(_ s: Double) { RunLoop.main.run(until: Date().addingTimeInterval(s)) }
+    let editPID = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.TextEdit").first?.processIdentifier
+    func edits() -> [SwitchWindow] { Windows.list().filter { $0.pid == editPID } }
+    let before = edits()
+    guard before.count >= 2 else { print("hacen falta 2 ventanas de TextEdit (hay \(before.count))"); exit(2) }
+    Windows.close(before[0]); pump(1.0)
+    let afterOne = edits().count
+    print("cerrar ventana: \(before.count) -> \(afterOne)  \(afterOne == before.count - 1 ? "OK" : "FALLA")")
+    NSRunningApplication(processIdentifier: before[0].pid)?.terminate(); pump(2.0)
+    let afterQuit = edits().count
+    print("cerrar app:     \(afterOne) -> \(afterQuit)  \(afterQuit == 0 ? "OK" : "FALLA")")
+    exit(afterOne == before.count - 1 && afterQuit == 0 ? 0 : 1)
+}
+
 // --selftest: reproduce el bug del MRU con ventanas reales usando el MISMO camino de ListTab
 // (Windows.focus). Requiere 2 ventanas de iTerm con titulo "yazi…" y una de Google Chrome.
 // Secuencia: B -> Chrome -> A  =>  el orden debe quedar A, Chrome, B (no A, B, Chrome).

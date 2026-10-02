@@ -69,6 +69,8 @@ final class Keyboard {
             case kVK_UpArrow:    switcher.step(-1)
             case kVK_Escape:     switcher.cancel()
             case kVK_Return, kVK_ANSI_KeypadEnter: switcher.commit()
+            case kVK_ANSI_W:     switcher.closeSelected(quitApp: false)   // cerrar la ventana
+            case kVK_ANSI_Q:     switcher.closeSelected(quitApp: true)    // cerrar la app entera
             default: break
             }
         }

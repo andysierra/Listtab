@@ -23,6 +23,10 @@ a paid tier. I only wanted the list. So I built exactly that: nothing more.
 - **⌘Tab / ⌘⇧Tab** opens a list of your windows: **icon · full title · app**, most recent first.
 - Recency is tracked **per window**, not per app: ⌘Tab toggles between your last two *windows* even if two of them belong to the same app (iTerm A → Chrome → iTerm A, never dragging iTerm B in between).
 - **↑ ↓** to move, **release ⌘** or **Return** to jump, **Esc** to cancel.
+- **Close from the list.** Each row ends with a **✕**: click it to close that window (same as the red button).
+  **⌥-click** — or press **Q** — quits the whole app; **W** closes the selected window from the keyboard.
+  The row disappears at once and the list re-reads reality a moment later, so a window that asks to save
+  its changes simply stays (the app shows its usual prompt).
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible. A list that hides
   3 of your 10 windows behind a scrollbar is lying to you.
 - Includes minimized windows. Quick ⌘Tab taps switch instantly with no flicker (the panel appears after 100 ms).
@@ -75,7 +79,7 @@ That setting **survives a crash**. If the app is force-killed and ⌘Tab stops w
 - It relies on two private macOS functions (`_AXUIElementGetWindow`, `CGSSetSymbolicHotKeyEnabled`).
   They have been stable for years, but Apple can break them in any release.
 - Tested on macOS 26 (Tahoe), Apple Silicon only. Intel and macOS 14–15 are untested.
-- No mouse, search, or close/quit from the list yet.
+- No search or mouse-hover selection yet; rows can't be clicked to jump (use the keyboard).
 
 ## How it works
 
