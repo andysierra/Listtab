@@ -13,7 +13,7 @@ struct SwitchWindow {
 
 enum Windows {
     /// Ventanas del Space actual (mas las minimizadas), de la mas reciente a la mas antigua.
-    /// El orden sale del z-order de CGWindowList (frente -> fondo), que no pide permiso de grabacion.
+    /// Orden: MRU por ventana (Recency); las que nunca tuvieron foco, por z-order de CGWindowList.
     static func list() -> [SwitchWindow] {
         let info = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] ?? []
         var z: [CGWindowID: Int] = [:]
@@ -22,10 +22,11 @@ enum Windows {
                   let num = d[kCGWindowNumber as String] as? UInt32 else { continue }
             z[num] = i
         }
+        Recency.shared.seed(frontToBack: z.sorted { $0.value < $1.value }.map { $0.key })
+        Recency.shared.touchFrontmost()   // la ventana actual siempre va primera
 
         let me = ProcessInfo.processInfo.processIdentifier
-        var visible: [(Int, SwitchWindow)] = []
-        var minimized: [SwitchWindow] = []
+        var all: [(z: Int, w: SwitchWindow)] = []
 
         for app in NSWorkspace.shared.runningApplications
         where app.activationPolicy == .regular && app.processIdentifier != me && !app.isTerminated {
@@ -43,15 +44,24 @@ enum Windows {
                 if title.isEmpty { title = appName }
                 let sw = SwitchWindow(pid: app.processIdentifier, windowID: wid, element: w,
                                       appName: appName, title: title, icon: app.icon, minimized: isMin)
-                if isMin { minimized.append(sw) }
-                else if let order = z[wid] { visible.append((order, sw)) }
+                if isMin { all.append((Int.max, sw)) }
+                else if let order = z[wid] { all.append((order, sw)) }
                 // ni minimizada ni en pantalla (otro Space, app oculta): fuera en la version minima
             }
         }
-        return visible.sorted { $0.0 < $1.0 }.map { $0.1 } + minimized
+        let rec = Recency.shared
+        return all.sorted { a, b in
+            switch (rec.rank(a.w.windowID), rec.rank(b.w.windowID)) {
+            case let (x?, y?): return x < y          // ambas con historial: MRU
+            case (_?, nil):    return true            // con historial antes que sin historial
+            case (nil, _?):    return false
+            case (nil, nil):   return a.z < b.z       // sin historial: z-order
+            }
+        }.map { $0.w }
     }
 
     static func focus(_ w: SwitchWindow) {
+        Recency.shared.touch(w.windowID)   // registrar ya: el AXObserver puede tardar unos ms
         if w.minimized {
             AXUIElementSetAttributeValue(w.element, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
         }

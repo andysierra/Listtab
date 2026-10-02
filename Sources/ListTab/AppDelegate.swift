@@ -40,7 +40,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func tryInstall() {
         if demo { retry?.invalidate(); return }
-        if Keyboard.shared.install() { retry?.invalidate() }
+        if Keyboard.shared.install() {
+            retry?.invalidate()
+            Recency.shared.start()   // MRU por ventana: necesita Accesibilidad, igual que el teclado
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

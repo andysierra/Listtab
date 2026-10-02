@@ -21,6 +21,7 @@ a paid tier. I only wanted the list. So I built exactly that: nothing more.
 ## What it does
 
 - **⌘Tab / ⌘⇧Tab** opens a list of your windows: **icon · full title · app**, most recent first.
+- Recency is tracked **per window**, not per app: ⌘Tab toggles between your last two *windows* even if two of them belong to the same app (iTerm A → Chrome → iTerm A, never dragging iTerm B in between).
 - **↑ ↓** to move, **release ⌘** or **Return** to jump, **Esc** to cancel.
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible. A list that hides
   3 of your 10 windows behind a scrollbar is lying to you.
@@ -88,8 +89,12 @@ That setting **survives a crash**. If the app is force-killed and ⌘Tab stops w
 
 ## Developing
 
+Create `~/.listtab-debug` to log every decision to `~/Library/Logs/ListTab.log`.
+
+
 ```bash
 ListTab --login-on / --login-off     # start at login without the menu
+ListTab --selftest                   # reproduce the per-window MRU scenario with real windows
 ListTab --list                       # print the windows the switcher would show
 ListTab --show                       # open the panel for 6 s without installing shortcuts
 ListTab --show --demo --count=23     # fake windows on a neutral backdrop (used for these screenshots)
