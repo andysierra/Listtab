@@ -41,7 +41,17 @@ and `yazi: dev`, pick one, done.
 
 ## Install
 
-Linux Mint MATE (22.x) already ships everything it needs: Python 3, GTK 3, libwnck, python3-xlib,
+**From a release** (`.deb`, any Debian/Ubuntu/Mint with MATE on X11):
+
+1. Download `listtab_x.y.z_all.deb` from [Releases](../../../releases).
+2. Install it (apt pulls any missing dependency):
+   ```bash
+   sudo apt install ./listtab_0.1.0_all.deb
+   ```
+3. Open **ListTab** from the applications menu (or `listtab` in a terminal) and press **Alt+Tab**.
+   *Open at login* is in its tray menu. Uninstall: `sudo apt remove listtab`.
+
+**From source.** Linux Mint MATE (22.x) already ships everything it needs: Python 3, GTK 3, libwnck, python3-xlib,
 AyatanaAppIndicator. No `sudo`, no compiling.
 
 ```bash
@@ -107,6 +117,7 @@ listtab --track[=N]                  # follow focus N seconds, then print the MR
 listtab --show                       # open the panel for 6 s without installing shortcuts
 listtab --show --demo --count=23     # fake windows on a neutral backdrop (used for these screenshots)
 tools/screenshots.sh                 # regenerate images/
+packaging/build-deb.sh               # build dist/listtab_<version>_all.deb
 ```
 
 ## Credits
