@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 from gi.repository import Gio, GdkPixbuf, Gtk, Wnck
 
+from listtab import settings
 from listtab.recency import shared as recency
 
 ICON_SIZE = 64   # se cargan grandes y se escalan al dibujar (la fila cambia de alto)
@@ -18,6 +19,7 @@ class SwitchWindow:
     title: str
     icon: GdkPixbuf.Pixbuf = None
     minimized: bool = False
+    workspace: str = ""      # nombre del escritorio si NO es el actual (modo "todos los escritorios")
     window: Wnck.Window = field(default=None, repr=False)   # None en --demo
 
 
@@ -86,9 +88,13 @@ def _screen():
     return s
 
 
-def list_windows():
-    """Ventanas del escritorio actual (también las minimizadas), de la más reciente a la más antigua.
+def list_windows(all_workspaces=None):
+    """Ventanas (también las minimizadas), de la más reciente a la más antigua.
+    all_workspaces: True = de todos los escritorios virtuales; False = solo del actual;
+    None = lo que diga el ajuste del usuario (por defecto, todos).
     Orden: MRU por ventana (Recency); las que nunca tuvieron foco, por apilado (z-order)."""
+    if all_workspaces is None:
+        all_workspaces = settings.get("all_workspaces")
     screen = _screen()
     stacked = screen.get_windows_stacked()                       # fondo -> frente
     z = {w.get_xid(): i for i, w in enumerate(reversed(stacked))}  # 0 = frente
@@ -102,13 +108,15 @@ def list_windows():
             continue
         if w.get_window_type() not in (Wnck.WindowType.NORMAL, Wnck.WindowType.DIALOG):
             continue
-        if ws is not None and not w.is_on_workspace(ws):
-            continue   # otro escritorio virtual: fuera (igual que los otros Spaces en macOS)
+        here = ws is None or w.is_on_workspace(ws)   # fijadas "en todos los escritorios" cuentan como aquí
+        if not here and not all_workspaces:
+            continue   # modo "solo este escritorio" (como los Spaces en la versión macOS)
+        other = "" if here or w.get_workspace() is None else f"escritorio {w.get_workspace().get_number() + 1}"
         icon, app_name = _icon_and_name(w)
         title = w.get_name() or app_name
         pid = w.get_pid() or (w.get_application().get_pid() if w.get_application() else 0)
         items.append((z.get(w.get_xid(), 1 << 30), SwitchWindow(pid, w.get_xid(), app_name, title, icon,
-                                                                   w.is_minimized(), w)))
+                                                                   w.is_minimized(), other, w)))
 
     def key(entry):
         zpos, sw = entry
@@ -126,6 +134,9 @@ def focus(sw, timestamp):
     w = sw.window
     if w is None:
         return
+    ws = w.get_workspace()
+    if ws is not None and ws != w.get_screen().get_active_workspace():
+        ws.activate(timestamp)   # está en otro escritorio: ir a ese escritorio primero
     if w.is_minimized():
         w.unminimize(timestamp)
     w.activate(timestamp)

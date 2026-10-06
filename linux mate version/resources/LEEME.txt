@@ -10,9 +10,11 @@ USO
   soltar Alt o Return       ir a la ventana             Esc   cancelar
   W   cierra la ventana seleccionada                    Q     cierra la app entera
   ✕ al final de cada fila: cierra esa ventana (Shift + clic: cierra la app)
-  Ícono de la bandeja > "Salir y restaurar Alt+Tab"
+  Ícono de la bandeja > "Ventanas de todos los escritorios" (por defecto) / "Solo ventanas de este escritorio"
+                       > "Salir y restaurar Alt+Tab"
+  (también:  listtab --workspaces=all   o   listtab --workspaces=current)
 
 SI PIERDES EL ALT+TAB DE MATE (ListTab se cerró a la fuerza):
   listtab --restore-native
 
-LÍMITES: lista las ventanas del escritorio virtual actual (también las minimizadas). Solo X11.
+LÍMITES: solo sesión X11.

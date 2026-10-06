@@ -5,7 +5,7 @@ import sys
 
 from gi.repository import GLib, Gtk
 
-from listtab import autostart, demo, log, native
+from listtab import autostart, demo, log, native, settings
 from listtab.recency import shared as recency
 from listtab.switcher import Switcher
 
@@ -94,6 +94,14 @@ class App:
         login.set_active(autostart.enabled())
         login.connect("toggled", lambda item: item.set_active(autostart.set_enabled(item.get_active())))
         menu.append(login)
+        menu.append(Gtk.SeparatorMenuItem())
+        # Qué ventanas lista: de todos los escritorios virtuales (por defecto) o solo del actual
+        every = Gtk.RadioMenuItem(label="Ventanas de todos los escritorios")
+        here = Gtk.RadioMenuItem(label="Solo ventanas de este escritorio", group=every)
+        (every if settings.get("all_workspaces") else here).set_active(True)
+        every.connect("toggled", lambda item: settings.set("all_workspaces", item.get_active()))
+        menu.append(every)
+        menu.append(here)
         menu.append(Gtk.SeparatorMenuItem())
         quit_item = Gtk.MenuItem(label="Salir y restaurar Alt+Tab")
         quit_item.connect("activate", self.quit)
