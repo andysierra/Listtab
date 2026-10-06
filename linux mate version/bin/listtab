@@ -1,0 +1,4 @@
+#!/bin/bash
+# Lanzador: ejecuta el paquete listtab que está junto a este script (repo o ~/.local/share/listtab).
+DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec env PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}" python3 -m listtab "$@"
