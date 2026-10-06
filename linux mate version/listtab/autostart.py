@@ -15,6 +15,11 @@ def _command():
     return shutil.which("listtab") or f"env PYTHONPATH={root} {sys.executable} -m listtab"
 
 
+def _quote(cmd):
+    """Exec= de un .desktop: una ruta con espacios (p. ej. "linux mate version/") va entre comillas."""
+    return f'"{cmd}"' if " " in cmd and not cmd.startswith("env ") else cmd
+
+
 def enabled():
     return os.path.exists(PATH)
 
@@ -25,7 +30,7 @@ def set_enabled(on):
         with open(PATH, "w") as f:
             f.write("[Desktop Entry]\nType=Application\nName=ListTab\n"
                     "Comment=Alt+Tab con lista de ventanas\n"
-                    f"Exec={_command()}\nIcon=listtab\nX-MATE-Autostart-enabled=true\nNoDisplay=true\n")
+                    f"Exec={_quote(_command())}\nIcon=listtab\nX-MATE-Autostart-enabled=true\nNoDisplay=true\n")
     elif os.path.exists(PATH):
         os.remove(PATH)
     return enabled()

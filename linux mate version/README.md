@@ -4,7 +4,7 @@
 
 **Alt+Tab, but a list of windows with their full titles. For MATE on X11. ~1,200 lines of Python, no build step.**
 
-A port of [ListTab for macOS](https://github.com/andysierra/Listtab) — same UI, same behavior — to the
+A port of [ListTab for macOS](../macos%20version/) — same UI, same behavior — to the
 Linux desktop I actually use (Linux Mint MATE).
 
 <p align="center"><img src="images/panel.png" alt="ListTab showing a list of windows: icon, full title, app"></p>
@@ -111,7 +111,7 @@ tools/screenshots.sh                 # regenerate images/
 
 ## Credits
 
-Port of [ListTab for macOS](https://github.com/andysierra/Listtab), whose architecture comes from reading
+Port of [ListTab for macOS](../macos%20version/), whose architecture comes from reading
 [AltTab](https://github.com/lwouis/alt-tab-macos). Written from scratch for X11.
 
 ## License
