@@ -7,7 +7,7 @@ import time
 from gi.repository import Gtk
 
 import listtab
-from listtab import autostart, native, windows
+from listtab import autostart, native, settings, windows
 from listtab.recency import shared as recency
 
 HELP = f"""ListTab {listtab.__version__} — Alt+Tab con una lista de ventanas (MATE / X11)
@@ -15,6 +15,7 @@ HELP = f"""ListTab {listtab.__version__} — Alt+Tab con una lista de ventanas (
   listtab                       ejecutar (ícono de bandeja; captura Alt+Tab)
   listtab --restore-native      devuelve el Alt+Tab de MATE si ListTab murió a la fuerza
   listtab --login-on / --login-off   abrir (o no) al iniciar sesión
+  listtab --workspaces=all|current   ventanas de todos los escritorios (def.) o solo del actual
   listtab --list                imprime las ventanas que vería el switcher
   listtab --track[=N]           sigue el foco N segundos (def. 8) e imprime el orden MRU
   listtab --selftest            reproduce el escenario MRU por ventana con ventanas reales
@@ -34,7 +35,8 @@ def pump(seconds):
 
 def _print_list():
     for i, w in enumerate(windows.list_windows()):
-        print(f"{i}\t{w.app_name}\t{w.title}" + ("\t[minimizada]" if w.minimized else ""))
+        print(f"{i}\t{w.app_name}\t{w.title}" + (f"\t[{w.workspace}]" if w.workspace else "")
+              + ("\t[minimizada]" if w.minimized else ""))
 
 
 def selftest():
@@ -125,6 +127,16 @@ def main():
     if "--login-on" in args or "--login-off" in args:
         on = autostart.set_enabled("--login-on" in args)
         print(f"inicio de sesión: {'activado' if on else 'desactivado'}")
+        return
+
+    ws = next((a for a in args if a.startswith("--workspaces=")), None)
+    if ws:
+        value = ws.split("=", 1)[1]
+        if value not in ("all", "current"):
+            print("uso: --workspaces=all|current")
+            sys.exit(1)
+        settings.set("all_workspaces", value == "all")
+        print("ventanas: " + ("de todos los escritorios" if value == "all" else "solo del escritorio actual"))
         return
 
     if "--selftest" in args:

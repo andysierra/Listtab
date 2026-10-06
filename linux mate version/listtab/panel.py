@@ -226,7 +226,8 @@ class Panel:
         title_x = cx + icon + 10
 
         close_x, close_y, csize = self._close_rect(i)
-        app_text = f"{w.app_name} · minimizada" if w.minimized else w.app_name
+        app_text = " · ".join([w.app_name] + ([w.workspace] if w.workspace else [])
+                              + (["minimizada"] if w.minimized else []))
         app = self._layout(cr, app_text, max(font - 2, 9), False)
         app.set_ellipsize(Pango.EllipsizeMode.NONE)
         aw, ah = app.get_pixel_size()

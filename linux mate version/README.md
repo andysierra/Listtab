@@ -27,8 +27,11 @@ and `yazi: dev`, pick one, done.
   its changes simply stays (the app shows its usual prompt).
   *(On macOS this is ⌥-click; on Linux Alt is the key you are holding, so it became Shift.)*
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible.
+- **All workspaces or just this one** (tray menu, or `listtab --workspaces=all|current`). Default: windows of
+  *every* workspace; those on another one say so (`Brave · escritorio 2`) and jumping there switches workspace.
 - Includes minimized windows. Quick Alt+Tab taps switch instantly with no flicker (the panel appears after 100 ms).
-- Tray icon with *Open at login* and *Quit & restore Alt+Tab*.
+- Tray icon with *Open at login*, the workspace setting and *Quit & restore Alt+Tab*.
+  Settings live in `~/.config/listtab/settings.json`.
 
 <p align="center"><img src="images/panel-many.png" width="520" alt="23 windows, all visible without scrolling"></p>
 <p align="center"><sub>23 windows, all visible. The panel scales instead of scrolling.</sub></p>
@@ -60,7 +63,6 @@ listtab --restore-native
 
 ## Limitations (v0.1)
 
-- Lists windows of the **current workspace** (plus its minimized ones), like the macOS version with Spaces.
 - **X11 only.** Wayland doesn't let a regular app grab Alt+Tab or read other apps' windows.
 - Tested on Linux Mint 22.3 MATE (Marco + compositor), one monitor.
 - No search or mouse-hover selection yet; rows can't be clicked to jump (use the keyboard).
@@ -94,6 +96,7 @@ Create `~/.listtab-debug` to log every decision to `~/.cache/listtab.log`. Run f
 
 ```bash
 listtab --login-on / --login-off     # start at login without the tray menu
+listtab --workspaces=all|current     # windows of every workspace (default) or only the current one
 listtab --selftest                   # per-window MRU scenario with real windows (2 of one app + 1 of another)
 listtab --selftest-close             # really closes 2 xed windows with ListTab's own code
 listtab --list                       # print the windows the switcher would show
