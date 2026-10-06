@@ -13,6 +13,7 @@ al hilo principal con GLib.idle_add.
 import queue
 import select
 import threading
+import traceback
 
 from gi.repository import GLib
 from Xlib import X, XK, display, error
@@ -20,6 +21,10 @@ from Xlib import X, XK, display, error
 from listtab import log
 
 ALT_KEYSYMS = {XK.XK_Alt_L, XK.XK_Alt_R, XK.XK_Meta_L, XK.XK_Meta_R}
+# Shift+Tab: python-xlib no trae XK_ISO_Left_Tab en su grupo por defecto (está en el grupo "xkb");
+# se usa el valor numérico del keysym. (Usar XK.XK_ISO_Left_Tab tiraba AttributeError, mataba este
+# hilo con el teclado capturado y dejaba el panel congelado: bug de la 0.1.0.)
+ISO_LEFT_TAB = 0xFE20
 # Bloq Mayús y Bloq Num cambian el "state": se registra el atajo con todas sus combinaciones.
 LOCKS = [0, X.LockMask, X.Mod2Mask, X.LockMask | X.Mod2Mask]
 
@@ -87,19 +92,31 @@ class Keyboard(threading.Thread):
             while not self.cmds.empty():
                 cmd = self.cmds.get()
                 if cmd == "ungrab" and self.active:
-                    self.d.ungrab_keyboard(X.CurrentTime)
-                    self.d.flush()
-                    self.active = False
+                    self._release()
                 elif cmd == "uninstall":
                     self._ungrab_keys()
                     self.d.flush()
                     return
-            while self.d.pending_events():
-                self._handle(self.d.next_event())
-            if self.active and not self.committed:
-                # vigilante: ¿sigue Alt apretado de verdad?
-                if not (self.root.query_pointer().mask & X.Mod1Mask):
-                    self._post("commit")
+            try:
+                while self.d.pending_events():
+                    self._handle(self.d.next_event())
+                if self.active and not self.committed:
+                    # vigilante: ¿sigue Alt apretado de verdad?
+                    if not (self.root.query_pointer().mask & X.Mod1Mask):
+                        self._post("commit")
+            except Exception:
+                # Nunca dejar el teclado capturado por un error: soltarlo y cerrar la sesión.
+                log.write("ERROR en el hilo del teclado:\n" + traceback.format_exc())
+                self._release()
+                GLib.idle_add(self._dispatch, "cancel", (), X.CurrentTime)
+
+    def _release(self):
+        try:
+            self.d.ungrab_keyboard(X.CurrentTime)
+            self.d.flush()
+        except Exception:
+            pass
+        self.active = False
 
     def _post(self, action, *args):
         if action == "commit":
@@ -133,8 +150,8 @@ class Keyboard(threading.Thread):
                 self._post("begin", shift)
             return
 
-        if keysym in (XK.XK_Tab, XK.XK_ISO_Left_Tab):
-            self._post("step", -1 if (shift or keysym == XK.XK_ISO_Left_Tab) else 1)
+        if keysym in (XK.XK_Tab, ISO_LEFT_TAB):
+            self._post("step", -1 if (shift or keysym == ISO_LEFT_TAB) else 1)
         elif keysym == XK.XK_Down:
             self._post("step", 1)
         elif keysym == XK.XK_Up:

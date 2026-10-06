@@ -40,8 +40,19 @@ class App:
     def _try_install(self):
         if self.keyboard.install():
             recency.start()   # MRU por ventana
+            GLib.timeout_add_seconds(1, self._watchdog)
             return False
         return True
+
+    def _watchdog(self):
+        """Red de seguridad: si el hilo del teclado muriera igual, la conexión X que tenía el teclado
+        capturado se cierra con el proceso. Se cierra ListTab ordenadamente (restaura Alt+Tab)."""
+        if self.keyboard.is_alive():
+            return True
+        log.write("watchdog: el hilo del teclado murió; se cierra ListTab y se restaura Alt+Tab")
+        self.switcher.cancel()
+        self.quit()
+        return False
 
     def quit(self, *_):
         if self.keyboard is not None:
