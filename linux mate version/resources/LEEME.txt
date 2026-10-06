@@ -1,6 +1,11 @@
 ListTab — Alt+Tab con lista de ventanas (Linux Mint MATE, sesión X11)
 
-INSTALAR
+INSTALAR (.deb)
+  sudo apt install ./listtab_x.y.z_all.deb   (o doble clic en el .deb)
+  Después ábrelo UNA vez desde el menú (o cierra sesión y vuelve a entrar): desde ahí arranca solo
+  en cada inicio de sesión ("Abrir al iniciar sesión" en la bandeja lo desactiva).
+
+INSTALAR (desde el código)
 1. ./install.sh          (sin sudo: copia a ~/.local/share/listtab y agrega "listtab" y "ListTab" al menú)
 2. listtab               (o "ListTab" desde el menú / rofi)
 3. Opcional: listtab --login-on   (o "Abrir al iniciar sesión" en el ícono de la bandeja)

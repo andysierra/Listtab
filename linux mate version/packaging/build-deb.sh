@@ -3,6 +3,8 @@
 #   /usr/bin/listtab                                   lanzador
 #   /usr/lib/listtab/{listtab,resources}/              programa
 #   /usr/share/applications/listtab.desktop            menú de aplicaciones / rofi
+#   /etc/xdg/autostart/listtab.desktop                 arranca en cada inicio de sesión (desactivable
+#                                                      desde la bandeja: anulación por usuario)
 #   /usr/share/icons/hicolor/scalable/apps/listtab.svg ícono
 #   /usr/share/doc/listtab/                            README, LEEME, copyright
 # Uso: packaging/build-deb.sh
@@ -14,7 +16,7 @@ OUT=dist/${PKG}_${VERSION}_all.deb
 ROOT=$(mktemp -d)
 trap 'rm -rf "$ROOT"' EXIT
 
-install -d "$ROOT/DEBIAN" "$ROOT/usr/bin" "$ROOT/usr/lib/$PKG" "$ROOT/usr/share/applications" \
+install -d "$ROOT/DEBIAN" "$ROOT/etc/xdg/autostart" "$ROOT/usr/bin" "$ROOT/usr/lib/$PKG" "$ROOT/usr/share/applications" \
            "$ROOT/usr/share/icons/hicolor/scalable/apps" "$ROOT/usr/share/doc/$PKG"
 cp -r listtab resources "$ROOT/usr/lib/$PKG/"
 find "$ROOT/usr/lib/$PKG" -name __pycache__ -type d -prune -exec rm -rf {} +
@@ -38,6 +40,17 @@ Terminal=false
 Categories=Utility;
 Keywords=alt-tab;alttab;switcher;windows;ventanas;
 StartupNotify=false
+DESK
+cat > "$ROOT/etc/xdg/autostart/listtab.desktop" <<'DESK'
+[Desktop Entry]
+Type=Application
+Name=ListTab
+Comment=Alt+Tab con una lista de ventanas
+Exec=listtab
+Icon=listtab
+OnlyShowIn=MATE;
+X-MATE-Autostart-enabled=true
+NoDisplay=true
 DESK
 install -m644 README.md "$ROOT/usr/share/doc/$PKG/README.md"
 install -m644 resources/LEEME.txt "$ROOT/usr/share/doc/$PKG/LEEME.txt"
@@ -68,6 +81,9 @@ Description: Alt+Tab with a list of windows and their full titles (MATE / X11)
  .
  It takes over Alt+Tab from Marco while running and gives it back on quit
  (listtab --restore-native if it was force-killed).
+ .
+ Starts automatically at every login. Right after installing, open it once
+ from the applications menu (or log out and back in).
 CTRL
 
 # Menú e íconos al día tras instalar/desinstalar

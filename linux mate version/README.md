@@ -48,8 +48,9 @@ and `yazi: dev`, pick one, done.
    ```bash
    sudo apt install ./listtab_0.1.0_all.deb
    ```
-3. Open **ListTab** from the applications menu (or `listtab` in a terminal) and press **Alt+Tab**.
-   *Open at login* is in its tray menu. Uninstall: `sudo apt remove listtab`.
+3. **Open ListTab once** from the applications menu (or log out and back in) and press **Alt+Tab**.
+   Installing a package can't start a program inside your session; from then on it starts at every login
+   (turn that off with *Open at login* in its tray menu). Uninstall: `sudo apt remove listtab`.
 
 **From source.** Linux Mint MATE (22.x) already ships everything it needs: Python 3, GTK 3, libwnck, python3-xlib,
 AyatanaAppIndicator. No `sudo`, no compiling.
