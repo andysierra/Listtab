@@ -8,6 +8,7 @@ INSTALAR
 USO
   Alt+Tab / Alt+Shift+Tab   abre y recorre la lista     ↑ ↓   mover
   soltar Alt o Return       ir a la ventana             Esc   cancelar
+  clic en una fila         ir a esa ventana (pasar el mouse solo la ilumina; no cambia la selección)
   W   cierra la ventana seleccionada                    Q     cierra la app entera
   ✕ al final de cada fila: cierra esa ventana (Shift + clic: cierra la app)
   Ícono de la bandeja > "Ventanas de todos los escritorios" (por defecto) / "Solo ventanas de este escritorio"

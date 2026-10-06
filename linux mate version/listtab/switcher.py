@@ -9,7 +9,8 @@ class ListModel:
     def __init__(self):
         self.items = []          # [SwitchWindow]
         self.selected = 0
-        self.on_close = None     # (índice de fila, cerrar la app entera) -> lo asigna el Switcher
+        self.on_close = None     # (índice de fila, cerrar la app entera, hora) -> lo asigna el Switcher
+        self.on_pick = None      # (índice de fila, hora): clic en una fila = saltar a esa ventana
 
 
 def _desc(w):
@@ -20,6 +21,7 @@ class Switcher:
     def __init__(self):
         self.model = ListModel()
         self.model.on_close = lambda index, quit_app, time: self.close(index, quit_app, time)
+        self.model.on_pick = lambda index, time: self.pick(index, time)
         self.panel = Panel(self.model)
         self.keyboard = None     # lo asigna app.py
         self.active = False
@@ -65,6 +67,13 @@ class Switcher:
         self._end()
         if target:
             windows.focus(target, time or self.panel.server_time())
+
+    def pick(self, index, time=0):
+        """Clic en una fila: seleccionarla y saltar a esa ventana (como soltar Alt sobre ella)."""
+        if not self.active or not 0 <= index < len(self.model.items):
+            return
+        self.model.selected = index
+        self.commit(time)
 
     def cancel(self):
         self._end()

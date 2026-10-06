@@ -25,6 +25,7 @@ BORDER = (1, 1, 1, 0.12)
 PRIMARY = (1, 1, 1, 0.95)
 SECONDARY = (235 / 255, 235 / 255, 245 / 255, 0.6)  # secondaryLabel (modo oscuro)
 CLOSE_HOVER = (1.0, 0.27, 0.23, 0.9)
+ROW_HOVER = (1, 1, 1, 0.08)                         # fila bajo el mouse (no cambia la selección)
 
 
 def _rounded(cr, x, y, w, h, r):
@@ -49,6 +50,7 @@ class Panel:
         self.height = 300
         self.scroll = 0
         self.hover_close = None      # índice de la fila con el mouse sobre su ✕
+        self.hover_row = None        # índice de la fila bajo el mouse (clic = saltar a esa ventana)
         self._scaled = {}            # (id pixbuf, tamaño) -> pixbuf escalado
         self.family = _font_family()
 
@@ -102,7 +104,7 @@ class Panel:
         self.area.queue_draw()
 
     def hide(self):
-        self.hover_close = None
+        self.hover_close = self.hover_row = None
         self.win.hide()
 
     # --- geometría de filas ------------------------------------------------------------------------
@@ -127,6 +129,13 @@ class Panel:
         size = min(max(h - 12, 12), 22)
         return x + w - 10 - size, y + (h - size) / 2, size
 
+    def _hit_row(self, mx, my):
+        for i in range(len(self.model.items)):
+            x, y, w, h = self._row_rect(i)
+            if x <= mx <= x + w and y <= my <= y + h and SHADOW <= my <= SHADOW + self.height:
+                return i
+        return None
+
     def _hit_close(self, mx, my):
         for i in range(len(self.model.items)):
             cx, cy, size = self._close_rect(i)
@@ -137,14 +146,18 @@ class Panel:
     # --- eventos de mouse ----------------------------------------------------------------------------
 
     def _motion(self, _w, ev):
-        hit = self._hit_close(ev.x, ev.y)
-        if hit != self.hover_close:
-            self.hover_close = hit
+        close, row = self._hit_close(ev.x, ev.y), self._hit_row(ev.x, ev.y)
+        if (close, row) != (self.hover_close, self.hover_row):
+            if (row is None) != (self.hover_row is None):   # mano sobre las filas, flecha fuera
+                cursor = Gdk.Cursor.new_from_name(self.win.get_display(), "pointer") if row is not None else None
+                self.win.get_window().set_cursor(cursor)
+            self.hover_close, self.hover_row = close, row
             self.area.queue_draw()
 
     def _leave(self, *_):
-        if self.hover_close is not None:
-            self.hover_close = None
+        if self.hover_close is not None or self.hover_row is not None:
+            self.hover_close = self.hover_row = None
+            self.win.get_window().set_cursor(None)
             self.area.queue_draw()
 
     def _click(self, _w, ev):
@@ -154,6 +167,10 @@ class Panel:
         if hit is not None and self.model.on_close:
             # Shift + clic = cerrar la app entera (en macOS era ⌥, pero aquí Alt es la tecla que se mantiene)
             self.model.on_close(hit, bool(ev.state & Gdk.ModifierType.SHIFT_MASK), ev.time)
+            return True
+        row = self._hit_row(ev.x, ev.y)
+        if row is not None and self.model.on_pick:
+            self.model.on_pick(row, ev.time)   # clic en la fila = saltar a esa ventana
         return True
 
     def _tooltip(self, _w, x, y, _kbd, tooltip):
@@ -215,6 +232,10 @@ class Panel:
         if selected:
             _rounded(cr, x, y, rw, h, 8)
             cr.set_source_rgb(*ACCENT)
+            cr.fill()
+        elif i == self.hover_row:
+            _rounded(cr, x, y, rw, h, 8)
+            cr.set_source_rgba(*ROW_HOVER)
             cr.fill()
 
         font = min(max(h * 0.4, 10), 14)
