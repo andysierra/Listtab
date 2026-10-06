@@ -39,7 +39,7 @@ a paid tier. I only wanted the list. So I built exactly that: nothing more.
 
 **From a release** (universal binary: Apple Silicon + Intel, macOS 14+):
 
-1. Download `ListTab-x.y.z.dmg` from [Releases](../../releases) and drag **ListTab** to *Applications*.
+1. Download `ListTab-x.y.z.dmg` from [Releases](../../../releases) and drag **ListTab** to *Applications*.
 2. The app isn't notarized (that needs a paid Apple Developer account — see the theme here), so macOS will block it
    the first time. Run once in Terminal:
    ```bash
