@@ -21,6 +21,9 @@ and `yazi: dev`, pick one, done.
 - Recency is tracked **per window**, not per app: Alt+Tab toggles between your last two *windows* even if
   two of them belong to the same app (WezTerm A → Brave → WezTerm A, never dragging WezTerm B in between).
 - **↑ ↓** to move, **release Alt** or **Return** to jump, **Esc** to cancel.
+- **Click a row to jump straight to it** (no need to Tab down to the 4th window). Hovering only lights the row
+  up; the blue selection never follows the mouse, so a pointer resting where the panel pops up can't change
+  where releasing Alt takes you.
 - **Close from the list.** Each row ends with a **✕**: click it to close that window (same as the title-bar ✕).
   **Shift-click** — or press **Q** — quits the whole app; **W** closes the selected window from the keyboard.
   The row disappears at once and the list re-reads reality a moment later, so a window that asks to save
@@ -65,7 +68,7 @@ listtab --restore-native
 
 - **X11 only.** Wayland doesn't let a regular app grab Alt+Tab or read other apps' windows.
 - Tested on Linux Mint 22.3 MATE (Marco + compositor), one monitor.
-- No search or mouse-hover selection yet; rows can't be clicked to jump (use the keyboard).
+- No search yet.
 
 ## How it works
 
