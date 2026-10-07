@@ -25,34 +25,40 @@ class SwitchWindow:
 
 # --- Nombre e ícono de la app: el .desktop que corresponde a la ventana (WM_CLASS) -----------------
 
-_apps = None      # clave en minúsculas -> Gio.DesktopAppInfo
-_icons = {}       # nombre de clase -> pixbuf
+_wm = None        # StartupWMClass (minúsculas) -> Gio.DesktopAppInfo   (coincidencia exacta, la más fiable)
+_ids = None       # id del .desktop / ejecutable (minúsculas) -> Gio.DesktopAppInfo
+_icons = {}       # clave de app (id del .desktop o WM_CLASS) -> pixbuf
 
 
 def _app_index():
-    global _apps
-    if _apps is None:
-        _apps = {}
+    global _wm, _ids
+    if _wm is None:
+        _wm, _ids = {}, {}
         for info in Gio.AppInfo.get_all():
             if not isinstance(info, Gio.DesktopAppInfo):
                 continue
             wm = info.get_startup_wm_class()
             if wm:
-                _apps.setdefault(wm.lower(), info)
+                _wm.setdefault(wm.lower(), info)
             app_id = (info.get_id() or "").removesuffix(".desktop").lower()
             if app_id:
-                _apps.setdefault(app_id, info)
+                _ids.setdefault(app_id, info)
             exe = os.path.basename((info.get_executable() or "")).lower()
             if exe:
-                _apps.setdefault(exe, info)
-    return _apps
+                _ids.setdefault(exe, info)
+    return _wm, _ids
 
 
 def app_info(w):
-    idx = _app_index()
-    for key in (w.get_class_group_name(), w.get_class_instance_name()):
-        if key and key.lower() in idx:
-            return idx[key.lower()]
+    """El .desktop de la ventana. La INSTANCIA de WM_CLASS va primero: las PWA de Brave/Chrome comparten la
+    clase ("Brave-browser") pero cada una tiene su instancia ("crx_<id>") y su propio .desktop con
+    StartupWMClass=crx_<id>, nombre ("YouTube") e ícono. Buscando por clase, todas salían como Brave."""
+    wm, ids = _app_index()
+    keys = [k.lower() for k in (w.get_class_instance_name(), w.get_class_group_name()) if k]
+    for table in (wm, ids):
+        for k in keys:
+            if k in table:
+                return table[k]
     return None
 
 
@@ -69,8 +75,8 @@ def themed_icon(name_or_gicon, size=ICON_SIZE):
 
 
 def _icon_and_name(w):
-    key = w.get_class_group_name() or str(w.get_xid())
     info = app_info(w)
+    key = info.get_id() if info else (w.get_class_instance_name() or w.get_class_group_name() or str(w.get_xid()))
     name = info.get_name() if info else (w.get_class_group_name() or w.get_application().get_name() or "?")
     if key not in _icons:
         pix = themed_icon(info.get_icon()) if info and info.get_icon() else None

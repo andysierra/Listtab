@@ -32,6 +32,8 @@ and `yazi: dev`, pick one, done.
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible.
 - **All workspaces or just this one** (tray menu, or `listtab --workspaces=all|current`). Default: windows of
   *every* workspace; those on another one say so (`Brave · escritorio 2`) and jumping there switches workspace.
+- **Web apps (PWAs) look like apps.** YouTube, ChatGPT, WhatsApp Web… installed as apps from Brave/Chrome show
+  their own icon and name, not the browser's (matched by their `crx_<id>` window instance).
 - Includes minimized windows. Quick Alt+Tab taps switch instantly with no flicker (the panel appears after 100 ms).
 - Tray icon with *Open at login*, the workspace setting and *Quit & restore Alt+Tab*.
   Settings live in `~/.config/listtab/settings.json`.
