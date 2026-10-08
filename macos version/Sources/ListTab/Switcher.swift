@@ -8,6 +8,7 @@ final class Switcher {
 
     init() {
         model.onClose = { [weak self] index, quitApp in self?.close(at: index, quitApp: quitApp) }
+        model.onPick = { [weak self] index in self?.pick(index) }
     }
     private(set) var active = false
     private var showWork: DispatchWorkItem?
@@ -51,6 +52,13 @@ final class Switcher {
         Log.write("commit -> \(target.map { "\($0.windowID)[\($0.appName):\($0.title)]" } ?? "nil")")
         end()
         if let target { Windows.focus(target) }
+    }
+
+    /// Clic en una fila: seleccionarla y saltar a esa ventana (como soltar ⌘ sobre ella).
+    func pick(_ index: Int) {
+        guard active, model.items.indices.contains(index) else { return }
+        model.selected = index
+        commit()
     }
 
     func cancel() { end() }

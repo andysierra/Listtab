@@ -27,6 +27,9 @@ a paid tier. I only wanted the list. So I built exactly that: nothing more.
   **⌥-click** — or press **Q** — quits the whole app; **W** closes the selected window from the keyboard.
   The row disappears at once and the list re-reads reality a moment later, so a window that asks to save
   its changes simply stays (the app shows its usual prompt).
+- **Click a row to jump straight to it** (no need to Tab down to the 4th window). Hovering only lights the row
+  up; the blue selection never follows the mouse, so a pointer resting where the panel pops up can't change
+  where releasing ⌘ takes you.
 - **No scrolling, ever** (almost). The rows shrink as needed so *every* window is visible. A list that hides
   3 of your 10 windows behind a scrollbar is lying to you.
 - Includes minimized windows. Quick ⌘Tab taps switch instantly with no flicker (the panel appears after 100 ms).
@@ -79,7 +82,7 @@ That setting **survives a crash**. If the app is force-killed and ⌘Tab stops w
 - It relies on two private macOS functions (`_AXUIElementGetWindow`, `CGSSetSymbolicHotKeyEnabled`).
   They have been stable for years, but Apple can break them in any release.
 - Tested on macOS 26 (Tahoe), Apple Silicon only. Intel and macOS 14–15 are untested.
-- No search or mouse-hover selection yet; rows can't be clicked to jump (use the keyboard).
+- No search yet.
 
 ## How it works
 

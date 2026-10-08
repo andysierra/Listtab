@@ -8,6 +8,8 @@ final class ListModel: ObservableObject {
     @Published var rowHeight: CGFloat = 36
     /// (indice de fila, cerrar la app entera). Lo asigna el Switcher.
     var onClose: ((Int, Bool) -> Void)?
+    /// Indice de la fila pulsada: salta a esa ventana. Lo asigna el Switcher.
+    var onPick: ((Int) -> Void)?
 }
 
 struct ListView: View {
@@ -18,9 +20,9 @@ struct ListView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: SwitcherPanel.spacing) {
                     ForEach(Array(model.items.enumerated()), id: \.offset) { i, w in
-                        Row(window: w, selected: i == model.selected, height: model.rowHeight) { quitApp in
-                            model.onClose?(i, quitApp)
-                        }.id(i)
+                        Row(window: w, selected: i == model.selected, height: model.rowHeight,
+                            onPick: { model.onPick?(i) },
+                            onClose: { quitApp in model.onClose?(i, quitApp) }).id(i)
                     }
                 }
                 .padding(10)
@@ -34,7 +36,9 @@ private struct Row: View {
     let window: SwitchWindow
     let selected: Bool
     let height: CGFloat
+    let onPick: () -> Void
     let onClose: (Bool) -> Void   // true = cerrar la app entera
+    @State private var hover = false
 
     var body: some View {
         let icon = max(height - 12, 12)
@@ -58,7 +62,17 @@ private struct Row: View {
         .padding(.horizontal, 10)
         .frame(height: height)
         .foregroundStyle(selected ? Color.white : Color.primary)
-        .background(RoundedRectangle(cornerRadius: 8).fill(selected ? Color.accentColor : Color.clear))
+        // El hover solo ilumina la fila: la seleccion azul no sigue al mouse (un puntero quieto donde
+        // aparece el panel no debe cambiar el destino al soltar ⌘).
+        .background(RoundedRectangle(cornerRadius: 8)
+            .fill(selected ? Color.accentColor : (hover ? Color.primary.opacity(0.12) : Color.clear)))
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onPick)   // clic en la fila = saltar a esa ventana (la ✕ gana en su zona)
+        .onHover { inside in
+            hover = inside
+            if inside { NSCursor.pointingHand.push() } else { NSCursor.pop() }
+        }
+        .onDisappear { if hover { hover = false; NSCursor.pop() } }
     }
 }
 
