@@ -63,7 +63,7 @@ def windows(count):
     out = []
     for i in range(count):
         names, app, title = POOL[i % len(POOL)]
-        out.append(SwitchWindow(pid=0, xid=i + 1, app_name=app, title=title, icon=_icon(names)))
+        out.append(SwitchWindow(pid=0, xid=i + 1, app_name=app, title=title, icon=_icon(names), live=False))
     return out
 
 

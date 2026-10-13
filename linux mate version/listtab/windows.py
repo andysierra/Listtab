@@ -1,7 +1,7 @@
 """Ventanas: listar, enfocar y cerrar, con libwnck (la misma biblioteca que usa el panel de MATE)."""
 import os
 import signal
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from gi.repository import Gio, GdkPixbuf, Gtk, Wnck
 
@@ -20,7 +20,16 @@ class SwitchWindow:
     icon: GdkPixbuf.Pixbuf = None
     minimized: bool = False
     workspace: str = ""      # nombre del escritorio si NO es el actual (modo "todos los escritorios")
-    window: Wnck.Window = field(default=None, repr=False)   # None en --demo
+    live: bool = True        # False en --demo (ventanas ficticias)
+
+    @property
+    def window(self):
+        """La Wnck.Window, pedida a Wnck EN EL MOMENTO (None si ya no existe o es demo).
+
+        No se guarda el objeto: le pertenece a Wnck, que lo libera cuando la ventana se cierra. Si Python
+        guarda una referencia y la suelta después (p. ej. al reemplazar la lista en el siguiente Alt+Tab),
+        g_object_unref sobre un objeto ya desarmado tumba el proceso con SIGSEGV (bug de la 0.1.2)."""
+        return Wnck.Window.get(self.xid) if self.live else None
 
 
 # --- Nombre e ícono de la app: el .desktop que corresponde a la ventana (WM_CLASS) -----------------
@@ -122,7 +131,7 @@ def list_windows(all_workspaces=None):
         title = w.get_name() or app_name
         pid = w.get_pid() or (w.get_application().get_pid() if w.get_application() else 0)
         items.append((z.get(w.get_xid(), 1 << 30), SwitchWindow(pid, w.get_xid(), app_name, title, icon,
-                                                                   w.is_minimized(), other, w)))
+                                                                   w.is_minimized(), other)))
 
     def key(entry):
         zpos, sw = entry
@@ -151,8 +160,9 @@ def focus(sw, timestamp):
 def close(sw, timestamp):
     """Cierre normal (_NET_CLOSE_WINDOW, como la ✕ de la barra de título). Si la app pregunta si guardar,
     la ventana sigue ahí y el siguiente refresco de la lista la vuelve a mostrar."""
-    if sw.window is not None:
-        sw.window.close(timestamp)
+    w = sw.window
+    if w is not None:
+        w.close(timestamp)
 
 
 def quit_app(sw, timestamp):
@@ -163,6 +173,7 @@ def quit_app(sw, timestamp):
             return
         except OSError:
             pass
-    if sw.window is not None and sw.window.get_class_group() is not None:
-        for w in sw.window.get_class_group().get_windows():
-            w.close(timestamp)
+    w = sw.window
+    if w is not None and w.get_class_group() is not None:
+        for other in w.get_class_group().get_windows():
+            other.close(timestamp)

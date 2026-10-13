@@ -102,7 +102,7 @@ class Switcher:
 
     def _refresh(self):
         """Relee las ventanas reales manteniendo la selección sobre la misma ventana."""
-        if self.active and self.model.items and self.model.items[0].window is not None:
+        if self.active and self.model.items and self.model.items[0].live:
             items = self.model.items
             keep = items[self.model.selected].xid if 0 <= self.model.selected < len(items) else None
             self.model.items = windows.list_windows()
@@ -120,6 +120,7 @@ class Switcher:
 
     def _end(self):
         self.active = False
+        self.model.items = []    # soltar la lista ya: nada de la sesión queda vivo hasta el próximo Alt+Tab
         if self._show_src:
             GLib.source_remove(self._show_src)
             self._show_src = None
